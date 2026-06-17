@@ -4,15 +4,13 @@
 
 @section('content')
 <div class="text-center mb-4">
-    <h1 class="fw-bold" style="background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-        <i class="fas fa-th me-2"></i>Судоку
-    </h1>
-    <p class="text-muted">Заполните сетку цифрами от 1 до 9</p>
+    <h1 class="page-title">🧩 Судоку</h1>
+    <p class="page-subtitle">Заполните сетку цифрами от 1 до 9</p>
 </div>
 
 <div class="sudoku-wrapper">
     <div class="text-center mb-3">
-        <select id="difficulty" class="form-select" style="max-width: 200px; margin: 0 auto; border-radius: 50px;">
+        <select id="difficulty" class="form-control" style="max-width: 200px; margin: 0 auto; border-radius: 50px;">
             <option value="easy">😊 Легкий</option>
             <option value="medium" selected>🤔 Средний</option>
             <option value="hard">😈 Сложный</option>
@@ -24,20 +22,13 @@
     </div>
     
     <div class="sudoku-controls">
-        <button id="check-sudoku" class="btn btn-success">
-            <i class="fas fa-check me-1"></i> Проверить
-        </button>
-        <button id="new-sudoku" class="btn btn-primary">
-            <i class="fas fa-redo me-1"></i> Новая
-        </button>
-        <button id="hint-sudoku" class="btn btn-info">
-            <i class="fas fa-lightbulb me-1"></i> Подсказка
-        </button>
+        <button id="check-sudoku" class="btn btn-success">✅ Проверить</button>
+        <button id="new-sudoku" class="btn btn-primary">🔄 Новая</button>
+        <button id="hint-sudoku" class="btn btn-warning">💡 Подсказка</button>
     </div>
     
     <div id="sudoku-result" class="mt-3"></div>
 </div>
-@endsection
 
 @push('scripts')
 <script>
@@ -45,9 +36,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentBoard = [];
     let solution = [];
     let givenCells = [];
-    let selectedDifficulty = 'medium';
+    let startTime = Date.now();
+    let gameFinished = false;
     
-    // Генерация простого судоку (для демонстрации)
+    // Генерация судоку
     function generateSudoku(difficulty) {
         const size = 9;
         const board = Array.from({length: size}, () => Array(size).fill(0));
@@ -63,13 +55,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Решаем судоку
         solveSudoku(board);
-        
-        // Копируем решение
         solution = board.map(row => [...row]);
         
-        // Удаляем ячейки в зависимости от сложности
         const cellsToRemove = difficulty === 'easy' ? 30 : difficulty === 'medium' ? 45 : 55;
         let removed = 0;
         givenCells = [];
@@ -95,9 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     for (let num = 1; num <= 9; num++) {
                         if (isValid(board, row, col, num)) {
                             board[row][col] = num;
-                            if (solveSudoku(board)) {
-                                return true;
-                            }
+                            if (solveSudoku(board)) return true;
                             board[row][col] = 0;
                         }
                     }
@@ -114,7 +100,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (board[row][i] === num) return false;
             if (board[i][col] === num) return false;
         }
-        
         const blockRow = Math.floor(row / 3) * 3;
         const blockCol = Math.floor(col / 3) * 3;
         for (let i = blockRow; i < blockRow + 3; i++) {
@@ -138,6 +123,8 @@ document.addEventListener('DOMContentLoaded', function() {
         currentBoard = generateSudoku(difficulty);
         const grid = document.getElementById('sudoku-grid');
         grid.innerHTML = '';
+        gameFinished = false;
+        startTime = Date.now();
         
         for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
@@ -164,13 +151,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 grid.appendChild(input);
             }
         }
+        document.getElementById('sudoku-result').innerHTML = '';
     }
     
-    // Проверка
-    document.getElementById('check-sudoku').addEventListener('click', function() {
+    function getScore() {
         const inputs = document.querySelectorAll('#sudoku-grid input');
         let correct = 0;
         let total = 0;
+        let allFilled = true;
         
         inputs.forEach(input => {
             if (!input.readOnly) {
@@ -186,21 +174,63 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (value >= 1 && value <= 9) {
                     input.classList.remove('success');
                     input.classList.add('error');
+                    allFilled = false;
+                } else {
+                    allFilled = false;
                 }
             }
         });
         
-        const result = document.getElementById('sudoku-result');
-        if (total === 0) {
-            result.innerHTML = '<div class="alert alert-warning rounded-pill">Заполните хотя бы одну клетку!</div>';
-        } else if (correct === total && total > 0) {
-            result.innerHTML = '<div class="alert alert-success rounded-pill">🎉 Отлично! Все верно!</div>';
+        return { correct, total, allFilled };
+    }
+    
+    // Сохранение результата
+    function saveResult(score, time) {
+        const difficulty = document.getElementById('difficulty').value;
+        
+        fetch('{{ route("games.sudoku.save") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                slozhnost: difficulty,
+                ochki: score,
+                vremya: Math.floor(time / 1000)
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('✅ Результат сохранён!');
+            }
+        })
+        .catch(error => console.error('❌ Ошибка сохранения:', error));
+    }
+    
+    document.getElementById('check-sudoku').addEventListener('click', function() {
+        if (gameFinished) return;
+        
+        const result = getScore();
+        const resultDiv = document.getElementById('sudoku-result');
+        const time = Date.now() - startTime;
+        
+        if (result.total === 0) {
+            resultDiv.innerHTML = '<div class="alert alert-warning">Заполните хотя бы одну клетку!</div>';
+            return;
+        }
+        
+        if (result.allFilled && result.correct === result.total) {
+            const score = result.correct * 10;
+            resultDiv.innerHTML = `<div class="alert alert-success">🎉 Отлично! Все верно! Очки: ${score}</div>`;
+            gameFinished = true;
+            saveResult(score, time);
         } else {
-            result.innerHTML = `<div class="alert alert-info rounded-pill">Правильно: ${correct}/${total}</div>`;
+            resultDiv.innerHTML = `<div class="alert alert-info">Правильно: ${result.correct}/${result.total}</div>`;
         }
     });
     
-    // Подсказка
     document.getElementById('hint-sudoku').addEventListener('click', function() {
         const inputs = document.querySelectorAll('#sudoku-grid input');
         const empty = [];
@@ -219,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
             random.readOnly = true;
         } else {
             document.getElementById('sudoku-result').innerHTML = 
-                '<div class="alert alert-warning rounded-pill">Нет пустых клеток!</div>';
+                '<div class="alert alert-warning">Нет пустых клеток!</div>';
         }
     });
     
@@ -237,3 +267,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
+@endsection

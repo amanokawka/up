@@ -47,6 +47,16 @@
                                 Профиль
                             </a>
                         </li>
+                        
+                        <!-- ⭐ АДМИН-ПАНЕЛЬ (только для rol_id = 2 или 3) -->
+                        @if(auth()->user()->rol_id == 2 || auth()->user()->rol_id == 3)
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}" href="{{ route('admin.index') }}">
+                                    Админ
+                                </a>
+                            </li>
+                        @endif
+                        
                         <li class="nav-item">
                             <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                                 @csrf

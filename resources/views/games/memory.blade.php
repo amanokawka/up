@@ -4,25 +4,17 @@
 
 @section('content')
 <div class="text-center mb-4">
-    <h1 class="fw-bold" style="background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-        <i class="fas fa-images me-2"></i>Найди пару
-    </h1>
-    <p class="text-muted">Найдите все пары одинаковых карточек</p>
+    <h1 class="page-title">🃏 Найди пару</h1>
+    <p class="page-subtitle">Найдите все пары одинаковых карточек</p>
 </div>
 
 <div class="memory-wrapper">
-    <div class="card border-0 shadow-lg rounded-4">
-        <div class="card-body p-4">
+    <div class="card-custom">
+        <div class="text-center">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="badge bg-primary rounded-pill px-4 py-2" id="moves">
-                    <i class="fas fa-shoe-prints me-1"></i> Ходы: 0
-                </span>
-                <span class="badge bg-success rounded-pill px-4 py-2" id="matches">
-                    <i class="fas fa-check-double me-1"></i> Пары: 0/8
-                </span>
-                <button id="new-memory" class="btn btn-primary rounded-pill">
-                    <i class="fas fa-redo me-1"></i> Новая
-                </button>
+                <span class="badge badge-primary" id="moves">🔄 Ходы: 0</span>
+                <span class="badge badge-success" id="matches">✅ Пары: 0/8</span>
+                <button id="new-memory" class="btn btn-primary btn-sm">🔄 Новая</button>
             </div>
             
             <div id="memory-grid" class="memory-grid"></div>
@@ -39,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let matched = [];
     let moves = 0;
     let lockBoard = false;
+    let startTime = Date.now();
+    let gameFinished = false;
+    const totalPairs = emojis.length;
     
     function shuffle(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -55,9 +50,11 @@ document.addEventListener('DOMContentLoaded', function() {
         matched = [];
         moves = 0;
         lockBoard = false;
+        gameFinished = false;
+        startTime = Date.now();
         
         document.getElementById('moves').textContent = `🔄 Ходы: 0`;
-        document.getElementById('matches').textContent = `✅ Пары: 0/${emojis.length}`;
+        document.getElementById('matches').textContent = `✅ Пары: 0/${totalPairs}`;
         renderGrid();
     }
     
@@ -78,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function flipCard(card, index) {
-        if (lockBoard) return;
+        if (lockBoard || gameFinished) return;
         if (flipped.includes(index)) return;
         if (matched.includes(index)) return;
         
@@ -103,13 +100,17 @@ document.addEventListener('DOMContentLoaded', function() {
             matched.push(i1, i2);
             card1.classList.add('matched');
             card2.classList.add('matched');
-            document.getElementById('matches').textContent = `✅ Пары: ${matched.length/2}/${emojis.length}`;
+            document.getElementById('matches').textContent = `✅ Пары: ${matched.length/2}/${totalPairs}`;
             flipped = [];
             lockBoard = false;
             
             if (matched.length === cards.length) {
+                gameFinished = true;
+                const time = Date.now() - startTime;
+                const score = Math.max(0, (totalPairs * 10) - moves + (totalPairs * 5));
                 setTimeout(() => {
-                    alert('🎉 Поздравляем! Вы нашли все пары!');
+                    alert(`🎉 Поздравляем! Вы нашли все пары!\nХоды: ${moves}\nОчки: ${score}`);
+                    saveResult(totalPairs, moves, time, score);
                 }, 500);
             }
         } else {
@@ -124,8 +125,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    function saveResult(pairs, moves, time, score) {
+        fetch('{{ route("games.memory.save") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                pairs: pairs,
+                moves: moves,
+                time: Math.floor(time / 1000),
+                score: score
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('✅ Результат сохранён!');
+            }
+        })
+        .catch(error => console.error('❌ Ошибка сохранения:', error));
+    }
+    
     document.getElementById('new-memory').addEventListener('click', initGame);
     initGame();
 });
 </script>
 @endpush
+@endsection

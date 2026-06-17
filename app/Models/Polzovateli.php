@@ -25,15 +25,13 @@ class Polzovateli extends Authenticatable
         'remember_token',
     ];
 
+    
     public function getAuthPassword()
     {
         return $this->parol;
     }
 
-    public function getAuthIdentifierName()
-    {
-        return 'login';
-    }
+
 
     public function rol()
     {
