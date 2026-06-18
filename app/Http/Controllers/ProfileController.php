@@ -27,33 +27,27 @@ class ProfileController extends Controller
         $request->validate([
             'imya' => 'nullable|string|max:100',
             'login' => 'required|string|max:50|unique:polzovateli,login,' . $user->id,
+            'avatar' => 'nullable|image|max:2048',
         ]);
 
+        // Обновляем данные
         $user->update([
             'imya' => $request->imya,
             'login' => $request->login,
         ]);
 
-        return redirect()->route('profile.index')
-            ->with('success', 'Профиль обновлён успешно!');
-    }
+        // Если загружен аватар
+        if ($request->hasFile('avatar')) {
+            // Удаляем старый аватар
+            if ($user->avatar && file_exists(public_path($user->avatar))) {
+                unlink(public_path($user->avatar));
+            }
 
-    public function avatar(Request $request)
-    {
-        $request->validate([
-            'avatar' => 'required|image|max:2048',
-        ]);
-
-        $user = Auth::user();
-        
-        if ($user->avatar && file_exists(public_path($user->avatar))) {
-            unlink(public_path($user->avatar));
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->update(['avatar' => '/storage/' . $path]);
         }
 
-        $path = $request->file('avatar')->store('avatars', 'public');
-        $user->update(['avatar' => '/storage/' . $path]);
-
         return redirect()->route('profile.index')
-            ->with('success', 'Аватар обновлён!');
+            ->with('success', 'Профиль обновлён успешно!');
     }
 }

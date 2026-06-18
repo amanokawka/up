@@ -10,15 +10,13 @@ class RatingController extends Controller
 {
     public function index(Request $request)
     {
-        $users = $this->getRatingQuery($request)->paginate(20);
-        
+        $users = $this->getRatingQuery($request)->paginate(15);
         return view('rating.index', compact('users'));
     }
 
     public function search(Request $request)
     {
-        $users = $this->getRatingQuery($request)->paginate(20);
-        
+        $users = $this->getRatingQuery($request)->paginate(15);
         return view('rating.index', compact('users'));
     }
 
@@ -26,17 +24,16 @@ class RatingController extends Controller
     {
         $query = Polzovateli::query()
             ->select('polzovateli.*')
-            ->selectRaw('COALESCE(sudoku.sum_ochki, 0) + COALESCE(memory.sum_ochki, 0) + COALESCE(snake.sum_ochki, 0) as total_points')
             ->selectRaw('COALESCE(sudoku.sum_ochki, 0) as sudoku_points')
             ->selectRaw('COALESCE(memory.sum_ochki, 0) as memory_points')
             ->selectRaw('COALESCE(snake.sum_ochki, 0) as snake_points')
+            ->selectRaw('COALESCE(sudoku.sum_ochki, 0) + COALESCE(memory.sum_ochki, 0) + COALESCE(snake.sum_ochki, 0) as total_points')
             ->selectRaw('COALESCE(sudoku.count, 0) + COALESCE(memory.count, 0) + COALESCE(snake.count, 0) as games_played')
             ->leftJoin(DB::raw('(SELECT polzovatel_id, SUM(ochki) as sum_ochki, COUNT(*) as count FROM sudoku_rezultati GROUP BY polzovatel_id) as sudoku'), 'polzovateli.id', '=', 'sudoku.polzovatel_id')
             ->leftJoin(DB::raw('(SELECT polzovatel_id, SUM(ochki) as sum_ochki, COUNT(*) as count FROM naidi_paru_rezultati GROUP BY polzovatel_id) as memory'), 'polzovateli.id', '=', 'memory.polzovatel_id')
-            ->leftJoin(DB::raw('(SELECT polzovatel_id, SUM(ochki) as sum_ochki, COUNT(*) as count FROM zmeyka_rezultati GROUP BY polzovatel_id) as snake'), 'polzovateli.id', '=', 'snake.polzovatel_id')
-            ->orderByDesc('total_points');
+            ->leftJoin(DB::raw('(SELECT polzovatel_id, SUM(ochki) as sum_ochki, COUNT(*) as count FROM zmeyka_rezultati GROUP BY polzovatel_id) as snake'), 'polzovateli.id', '=', 'snake.polzovatel_id');
 
-        // Поиск по имени
+        // Поиск по имени/логину
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -59,6 +56,9 @@ class RatingController extends Controller
                     break;
             }
         }
+
+        // Сортировка ТОЛЬКО по общим очкам (по убыванию)
+        $query->orderByDesc('total_points');
 
         return $query;
     }

@@ -13,100 +13,99 @@
     @stack('styles')
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="{{ route('home') }}">
+    <!-- ============================================ -->
+    <!-- ОСНОВНОЙ КОНТЕЙНЕР                           -->
+    <!-- ============================================ -->
+    <div class="container">
+        <!-- ============================================ -->
+        <!-- НАВИГАЦИЯ (ВНУТРИ КОНТЕЙНЕРА)                -->
+        <!-- ============================================ -->
+        <nav class="navbar">
+            <div class="nav-brand">
                 <i class="fas fa-leaf me-2"></i>Мини-Игры
-            </a>
+            </div>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
-                            Главная
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('rating.*') ? 'active' : '' }}" href="{{ route('rating.index') }}">
-                            Рейтинг
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('support.*') ? 'active' : '' }}" href="{{ route('support.index') }}">
-                            Поддержка
+            <ul class="nav-menu">
+                <li>
+                    <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">
+                        Главная
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('rating.index') }}" class="{{ request()->routeIs('rating.*') ? 'active' : '' }}">
+                        Рейтинг
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('support.index') }}" class="{{ request()->routeIs('support.*') ? 'active' : '' }}">
+                        Поддержка
+                    </a>
+                </li>
+                
+                @auth
+                    <li>
+                        <a href="{{ route('profile.index') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                            Профиль
                         </a>
                     </li>
                     
-                    @auth
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" href="{{ route('profile.index') }}">
-                                Профиль
+                    @if(auth()->user()->rol_id == 2 || auth()->user()->rol_id == 3)
+                        <li>
+                            <a href="{{ route('admin.index') }}" class="{{ request()->routeIs('admin.*') ? 'active' : '' }}">
+                                Админ
                             </a>
                         </li>
-                        
-                        <!-- ⭐ АДМИН-ПАНЕЛЬ (только для rol_id = 2 или 3) -->
-                        @if(auth()->user()->rol_id == 2 || auth()->user()->rol_id == 3)
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}" href="{{ route('admin.index') }}">
-                                    Админ
-                                </a>
-                            </li>
-                        @endif
-                        
-                        <li class="nav-item">
-                            <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                                @csrf
-                                <button type="submit" class="nav-link" style="background: none; border: none; color: #2d3748; cursor: pointer;">
-                                    Выйти
-                                </button>
-                            </form>
-                        </li>
-                    @else
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('login') }}">Вход</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('register') }}">Регистрация</a>
-                        </li>
-                    @endauth
-                </ul>
-            </div>
-        </div>
-    </nav>
+                    @endif
+                    
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                            @csrf
+                            <button type="submit" class="nav-link-btn">Выйти</button>
+                        </form>
+                    </li>
+                @else
+                    <li><a href="{{ route('login') }}">Войти</a></li>
+                    <li><a href="{{ route('register') }}">Регистрация</a></li>
+                @endauth
+            </ul>
+        </nav>
 
-    <div class="main-container">
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
+        <!-- ============================================ -->
+        <!-- ОСНОВНОЙ КОНТЕНТ                             -->
+        <!-- ============================================ -->
+        <main>
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
 
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
 
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <strong>Ошибка!</strong>
-                <ul class="mb-0 mt-2">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <strong>Ошибка!</strong>
+                    <ul class="mb-0 mt-2">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-        @yield('content')
+            @yield('content')
+        </main>
     </div>
 
+    <!-- ============================================ -->
+    <!-- ПОДКЛЮЧЕНИЕ СКРИПТОВ                         -->
+    <!-- ============================================ -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @stack('scripts')
 </body>

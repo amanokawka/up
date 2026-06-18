@@ -9,7 +9,6 @@
 </div>
 
 <div class="games-grid">
-    <!-- Судоку -->
     <div class="game-card">
         <div class="icon-wrapper icon-sudoku">
             <i class="fas fa-th"></i>
@@ -21,7 +20,6 @@
         </a>
     </div>
 
-    <!-- Найди пару -->
     <div class="game-card">
         <div class="icon-wrapper icon-memory">
             <i class="fas fa-images"></i>
@@ -33,7 +31,6 @@
         </a>
     </div>
 
-    <!-- Змейка -->
     <div class="game-card">
         <div class="icon-wrapper icon-snake">
             <i class="fas fa-dragon"></i>
