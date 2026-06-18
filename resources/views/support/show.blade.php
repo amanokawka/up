@@ -3,73 +3,163 @@
 @section('title', 'Тикет #' . $ticket->id)
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>
-        <i class="fas fa-ticket-alt text-primary"></i> 
-        Тикет #{{ $ticket->id }}: {{ $ticket->tema }}
-    </h1>
-    <a href="{{ route('support.index') }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Назад
-    </a>
-</div>
-
-<!-- Статус тикета -->
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6">
-                <strong>Статус:</strong>
-                @if($ticket->status == 'open')
-                    <span class="badge bg-danger">Открыт</span>
-                @elseif($ticket->status == 'in_progress')
-                    <span class="badge bg-warning text-dark">В работе</span>
-                @else
-                    <span class="badge bg-success">Закрыт</span>
-                @endif
-            </div>
-            <div class="col-md-6 text-md-end">
-                <strong>Создан:</strong> {{ $ticket->created_at->format('d.m.Y H:i') }}
-                <br>
-                <strong>Последнее обновление:</strong> {{ $ticket->updated_at->format('d.m.Y H:i') }}
-            </div>
-        </div>
-        @if($ticket->moderator_id)
-            <div class="mt-2">
-                <strong>Модератор:</strong> {{ $ticket->moderator->imya ?? $ticket->moderator->login ?? 'Не назначен' }}
-            </div>
-        @endif
-    </div>
-</div>
-
-<!-- Сообщения -->
-<div class="card">
-    <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="fas fa-comments"></i> Сообщения</h5>
-    </div>
-    <div class="card-body" style="max-height: 500px; overflow-y: auto;">
-        @foreach($ticket->soobsheniya as $message)
-            <div class="mb-3 {{ $message->ot_personala ? 'text-end' : '' }}">
-                <div class="d-inline-block p-3 rounded {{ $message->ot_personala ? 'bg-primary text-white' : 'bg-light' }}" 
-                     style="max-width: 80%;">
-                    <div class="mb-1">
-                        <strong>{{ $message->ot_personala ? 'Модератор' : ($message->polzovatel->imya ?? $message->polzovatel->login) }}</strong>
-                        <small class="text-muted ms-2">{{ $message->created_at->format('d.m.Y H:i') }}</small>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-custom p-0">
+            <!-- ШАПКА ЧАТА -->
+            <div class="chat-header">
+                <div>
+                    <h5 class="ticket-title">
+                        <i class="fas fa-ticket-alt me-2"></i>
+                        {{ $ticket->tema }}
+                    </h5>
+                    <div class="ticket-meta">
+                        <span>Автор: {{ $ticket->polzovatel->imya ?? $ticket->polzovatel->login }}</span>
+                        <span>•</span>
+                        <span>{{ $ticket->created_at->format('d.m.Y H:i') }}</span>
+                        @if($ticket->moderator_id)
+                            <span>•</span>
+                            <span>
+                                Модератор: {{ $ticket->moderator->imya ?? $ticket->moderator->login }}
+                                <span class="staff-badge {{ $ticket->moderator->rol_id == 3 ? 'admin' : ($ticket->moderator->rol_id == 2 ? 'moderator' : 'staff') }}">
+                                    {{ $ticket->moderator->rol_id == 3 ? 'Админ' : ($ticket->moderator->rol_id == 2 ? 'Модератор' : 'Сотрудник') }}
+                                </span>
+                            </span>
+                        @endif
                     </div>
-                    <p class="mb-0">{{ $message->tekst }}</p>
+                </div>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <span class="ticket-status {{ $ticket->status }}">
+                        {{ $ticket->status == 'open' ? 'Открыт' : ($ticket->status == 'in_progress' ? 'В работе' : 'Закрыт') }}
+                    </span>
+                    
+                    <!-- ⭐ КНОПКА ЗАКРЫТИЯ ТИКЕТА ⭐ -->
+                    @auth
+                        @if((auth()->user()->rol_id == 2 || auth()->user()->rol_id == 3) && $ticket->status != 'closed')
+                            <button type="button" class="btn-close-ticket" 
+                                    onclick="closeTicket({{ $ticket->id }})">
+                                <i class="fas fa-check me-1"></i>Закрыть
+                            </button>
+                        @endif
+                    @endauth
                 </div>
             </div>
-        @endforeach
-    </div>
-    <div class="card-footer">
-        <form action="{{ route('support.message', $ticket->id) }}" method="POST">
-            @csrf
-            <div class="input-group">
-                <input type="text" class="form-control" name="tekst" placeholder="Введите сообщение..." required>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-paper-plane"></i> Отправить
-                </button>
+            
+            <!-- ОБЛАСТЬ СООБЩЕНИЙ -->
+            <div class="chat-messages" id="chatMessages">
+                @foreach($ticket->soobsheniya as $message)
+                    @php
+                        $isStaff = $message->ot_personala;
+                        $user = $message->polzovatel;
+                    @endphp
+                    
+                    <div class="chat-message {{ $isStaff ? 'staff-message' : 'user-message' }}">
+                        <div class="chat-avatar">
+                            @if($user->avatar)
+                                <img src="{{ $user->avatar }}" alt="{{ $user->login }}">
+                            @else
+                                <i class="fas fa-user"></i>
+                            @endif
+                        </div>
+                        
+                        <div class="message-bubble">
+                            <div class="message-meta">
+                                <span class="message-author">
+                                    {{ $isStaff ? 'Сотрудник' : ($user->imya ?? $user->login) }}
+                                    @if($isStaff)
+                                        <span class="staff-badge {{ $user->rol_id == 3 ? 'admin' : ($user->rol_id == 2 ? 'moderator' : 'staff') }}">
+                                            {{ $user->rol_id == 3 ? 'Админ' : ($user->rol_id == 2 ? 'Модератор' : 'Сотрудник') }}
+                                        </span>
+                                    @endif
+                                </span>
+                                <span class="message-time">{{ $message->created_at->format('d.m.Y H:i') }}</span>
+                            </div>
+                            <p>{{ $message->tekst }}</p>
+                        </div>
+                    </div>
+                @endforeach
             </div>
-        </form>
+            
+            <!-- ПОЛЕ ВВОДА -->
+            <div class="chat-input-area">
+                @if($ticket->status != 'closed')
+                    <form class="chat-form" id="chatForm" method="POST" action="{{ route('support.message', $ticket->id) }}">
+                        @csrf
+                        <textarea name="tekst" id="messageInput" rows="1" 
+                                  placeholder="Введите сообщение..." 
+                                  required autofocus></textarea>
+                        <button type="submit" class="btn-send">
+                            <i class="fas fa-paper-plane me-1"></i>Отправить
+                        </button>
+                    </form>
+                @else
+                    <div class="ticket-closed-notice">
+                        <i class="fas fa-check-circle"></i>
+                        <p>Тикет закрыт. Новые сообщения нельзя отправить.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <a href="{{ route('support.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Назад к списку
+            </a>
+        </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) {
+        messageInput.focus();
+        
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        
+        messageInput.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('chatForm').submit();
+            }
+        });
+    }
+});
+
+// ⭐ ФУНКЦИЯ ЗАКРЫТИЯ ТИКЕТА ⭐
+function closeTicket(ticketId) {
+    if (!confirm('Вы уверены, что хотите закрыть этот тикет?')) return;
+    
+    fetch('/support/' + ticketId + '/close', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Ошибка при закрытии тикета');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('Ошибка при закрытии тикета');
+    });
+}
+</script>
+@endpush
 @endsection

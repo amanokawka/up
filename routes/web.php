@@ -82,3 +82,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
     Route::post('/users/{user}/role', [AdminUserController::class, 'changeRole'])->name('admin.users.role');
 });
+
+// Закрытие тикета (только для админа/модератора)
+Route::post('/support/{ticket}/close', [SupportController::class, 'close'])
+    ->name('support.close')
+    ->middleware('auth');

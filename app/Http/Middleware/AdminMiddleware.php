@@ -14,11 +14,12 @@ class AdminMiddleware
             return redirect()->route('login');
         }
 
-        // rol_id: 1 - user, 2 - moderator, 3 - admin
-        if (Auth::user()->rol_id > 2) {
+        // ✅ rol_id: 1 - пользователь, 2 - модератор, 3 - администратор
+        // Доступ для модератора (2) и администратора (3)
+        if (Auth::user()->rol_id == 2 || Auth::user()->rol_id == 3) {
             return $next($request);
         }
 
-        abort(403, 'Доступ запрещен. Требуются права администратора или модератора.');
+        abort(403, 'Доступ запрещен. Требуются права модератора или администратора.');
     }
 }
