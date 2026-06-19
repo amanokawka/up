@@ -63,7 +63,6 @@
                         </div>
                         <div class="ticket-user">
                             От: {{ $ticket->polzovatel->imya ?? $ticket->polzovatel->login }}
-                            <span style="color: #a0aec0;">(@{{ $ticket->polzovatel->login }})</span>
                         </div>
                         <div class="ticket-meta">
                             <span>Создано: {{ $ticket->created_at->format('d.m.Y H:i') }}</span>
@@ -116,7 +115,6 @@
                                 </div>
                                 <div class="ticket-user">
                                     От: {{ $ticket->polzovatel->imya ?? $ticket->polzovatel->login }}
-                                    <span style="color: #a0aec0;">(@{{ $ticket->polzovatel->login }})</span>
                                 </div>
                                 <div class="ticket-meta">
                                     <span>Создано: {{ $ticket->created_at->format('d.m.Y H:i') }}</span>

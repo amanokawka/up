@@ -3,109 +3,157 @@
 @section('title', 'Админ-панель')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-shield-alt text-primary"></i> Админ-панель</h1>
-    <span class="badge bg-primary">Добро пожаловать, {{ Auth::user()->imya ?? Auth::user()->login }}!</span>
-</div>
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="admin-container">
+            <!-- Заголовок -->
+            <div class="admin-header">
+                <div>
+                    <h1 class="admin-title">⚙️ Админ-панель</h1>
+                    <p class="admin-subtitle">Управление сайтом и пользователями</p>
+                </div>
+                <div class="admin-user-info">
+                    <span class="badge admin-role-badge">
+                        {{ Auth::user()->rol_id == 3 ? 'Администратор' : 'Модератор' }}
+                    </span>
+                </div>
+            </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card bg-primary text-white mb-3">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-users"></i> Пользователи
-                </h5>
-                <h2>{{ $stats['total_users'] }}</h2>
-                <p class="mb-0">Активных пользователей</p>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="card bg-success text-white mb-3">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-ticket-alt"></i> Открытые тикеты
-                </h5>
-                <h2>{{ $stats['open_tickets'] }}</h2>
-                <p class="mb-0">Требуют внимания</p>
-            </div>
-        </div>
-    </div>
-</div>
+            <!-- ========================================== -->
+            <!-- СТАТИСТИКА                                 -->
+            <!-- ========================================== -->
+            <div class="stats-grid-admin">
+                <!-- Всего пользователей -->
+                <div class="stat-card-admin">
+                    <div class="stat-icon-admin">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ $stats['total_users'] ?? 0 }}</div>
+                        <div class="stat-label">Всего пользователей</div>
+                    </div>
+                </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <div class="card bg-warning text-dark mb-3">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-gamepad"></i> Всего игр сыграно
-                </h5>
-                <h2>{{ $stats['total_games'] }}</h2>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4">
-        <div class="card bg-info text-white mb-3">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-ban"></i> Заблокировано
-                </h5>
-                <h2>{{ $stats['banned_users'] }}</h2>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4">
-        <div class="card bg-secondary text-white mb-3">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-trophy"></i> Топ-игрок
-                </h5>
-                <h6>{{ $stats['top_player'] ?? 'Нет данных' }}</h6>
-            </div>
-        </div>
-    </div>
-</div>
+                <!-- Открытые тикеты -->
+                <div class="stat-card-admin warning">
+                    <div class="stat-icon-admin">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ $stats['open_tickets'] ?? 0 }}</div>
+                        <div class="stat-label">Открытых тикетов</div>
+                    </div>
+                </div>
 
-<!-- Быстрые действия -->
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">Быстрые действия</h5>
+                <!-- Всего игр -->
+                <div class="stat-card-admin success">
+                    <div class="stat-icon-admin">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ $stats['total_games'] ?? 0 }}</div>
+                        <div class="stat-label">Сыграно игр</div>
+                    </div>
+                </div>
+
+                <!-- Заблокировано -->
+                <div class="stat-card-admin danger">
+                    <div class="stat-icon-admin">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ $stats['banned_users'] ?? 0 }}</div>
+                        <div class="stat-label">Заблокированных</div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ route('admin.users') }}" class="btn btn-primary">
-                        <i class="fas fa-users-cog"></i> Управление пользователями
+
+            <!-- ========================================== -->
+            <!-- БЫСТРЫЕ ДЕЙСТВИЯ                           -->
+            <!-- ========================================== -->
+            <div class="admin-actions">
+                <h3>🚀 Быстрые действия</h3>
+                <div class="admin-actions-grid">
+                    <a href="{{ route('admin.users') }}" class="admin-action-btn primary">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Управление пользователями</span>
                     </a>
-                    <a href="{{ route('support.index') }}" class="btn btn-warning">
-                        <i class="fas fa-headset"></i> Перейти в поддержку
+                    <a href="{{ route('support.index') }}" class="admin-action-btn warning">
+                        <i class="fas fa-headset"></i>
+                        <span>Поддержка</span>
+                        @if(($stats['open_tickets'] ?? 0) > 0)
+                            <span class="badge bg-danger">{{ $stats['open_tickets'] }}</span>
+                        @endif
                     </a>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">Последние тикеты</h5>
-            </div>
-            <div class="card-body">
-                @if($stats['recent_tickets']->isEmpty())
-                    <p class="text-muted">Нет новых тикетов</p>
-                @else
-                    @foreach($stats['recent_tickets'] as $ticket)
-                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-                            <span>{{ $ticket->tema }}</span>
-                            <span class="badge bg-{{ $ticket->status == 'open' ? 'danger' : ($ticket->status == 'in_progress' ? 'warning' : 'success') }}">
-                                {{ $ticket->status }}
-                            </span>
+
+            <!-- ========================================== -->
+            <!-- ТОП-ИГРОК                                  -->
+            <!-- ========================================== -->
+            <div class="admin-top-player">
+                <h3>🏆 Лучший игрок</h3>
+                @if(isset($stats['top_player']) && $stats['top_player'])
+                    <div class="top-player-card">
+                        <div class="top-player-avatar">
+                            @if($stats['top_player_avatar'])
+                                <img src="{{ $stats['top_player_avatar'] }}" alt="">
+                            @else
+                                <i class="fas fa-user-circle"></i>
+                            @endif
                         </div>
-                    @endforeach
+                        <div class="top-player-info">
+                            <div class="top-player-name">{{ $stats['top_player'] }}</div>
+                            <div class="top-player-stats">
+                                <span>⭐ {{ $stats['top_player_score'] ?? 0 }} очков</span>
+                            </div>
+                        </div>
+                        <div class="top-player-badge">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                    </div>
+                @else
+                    <div class="empty-state">
+                        <i class="fas fa-trophy"></i>
+                        <p>Пока нет данных</p>
+                    </div>
+                @endif
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ПОСЛЕДНИЕ ТИКЕТЫ                          -->
+            <!-- ========================================== -->
+            <div class="admin-recent">
+                <div class="admin-recent-header">
+                    <h3>📩 Последние обращения</h3>
+                </div>
+                
+                @if(($stats['recent_tickets'] ?? collect())->isEmpty())
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Нет новых обращений</p>
+                    </div>
+                @else
+                    <div class="tickets-list-admin">
+                        @foreach($stats['recent_tickets'] as $ticket)
+                            <a href="{{ route('support.show', $ticket->id) }}" class="ticket-item-admin">
+                                <div class="ticket-info">
+                                    <span class="ticket-user">
+                                        {{ $ticket->polzovatel->imya ?? $ticket->polzovatel->login }}
+                                    </span>
+                                    <span class="ticket-title">{{ $ticket->tema }}</span>
+                                </div>
+                                <div class="ticket-meta">
+                                    <span class="ticket-status {{ $ticket->status }}">
+                                        {{ $ticket->status == 'open' ? 'Открыт' : ($ticket->status == 'in_progress' ? 'В работе' : 'Закрыт') }}
+                                    </span>
+                                    <span class="ticket-time">
+                                        {{ $ticket->created_at->diffForHumans() }}
+                                    </span>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
                 @endif
             </div>
         </div>

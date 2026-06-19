@@ -27,7 +27,7 @@
                         <option value="#f56565">🔴</option>
                         <option value="#ed8936">🟠</option>
                         <option value="#9f7aea">🟣</option>
-                        <option value="#fbbf24">🟡</option>
+                        <option value="#f7fb24ff">🟡</option>
                     </select>
                 </div>
                 

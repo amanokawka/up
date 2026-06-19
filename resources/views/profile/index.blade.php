@@ -47,7 +47,7 @@
             <!-- СТАТИСТИКА                                 -->
             <!-- ========================================== -->
             <div class="stats-grid">
-                <!-- Судоку -->
+                
                 <div class="stat-card">
                     <h3>🧩 Судоку</h3>
                     @if($user->sudokuRezultati->count() > 0)
@@ -63,7 +63,6 @@
                     @endif
                 </div>
                 
-                <!-- Найди пару -->
                 <div class="stat-card">
                     <h3>🃏 Найди пару</h3>
                     @if($user->naidiParuRezultati->count() > 0)
@@ -79,7 +78,6 @@
                     @endif
                 </div>
                 
-                <!-- Змейка -->
                 <div class="stat-card">
                     <h3>🐍 Змейка</h3>
                     @if($user->zmeykaRezultati->count() > 0)
@@ -135,7 +133,6 @@
         <span class="close" id="closeModalBtn">&times;</span>
         <h2>Редактировать профиль</h2>
         
-        <!-- ОДНА ФОРМА, ОДНА КНОПКА -->
         <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')

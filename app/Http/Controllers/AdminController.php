@@ -29,6 +29,8 @@ class AdminController extends Controller
                 ->limit(5)
                 ->get(),
             'top_player' => $this->getTopPlayer(),
+            'top_player_avatar' => $this->getTopPlayerAvatar(),
+            'top_player_score' => $this->getTopPlayerScore(),
         ];
 
         return view('admin.index', compact('stats'));
@@ -45,5 +47,31 @@ class AdminController extends Controller
             ->first();
 
         return $topPlayer ? ($topPlayer->imya ?? $topPlayer->login) : null;
+    }
+
+    private function getTopPlayerAvatar()
+    {
+        $topPlayer = Polzovateli::select('polzovateli.*')
+            ->selectRaw('COALESCE(sudoku.sum_ochki, 0) + COALESCE(memory.sum_ochki, 0) + COALESCE(snake.sum_ochki, 0) as total_points')
+            ->leftJoin(DB::raw('(SELECT polzovatel_id, SUM(ochki) as sum_ochki FROM sudoku_rezultati GROUP BY polzovatel_id) as sudoku'), 'polzovateli.id', '=', 'sudoku.polzovatel_id')
+            ->leftJoin(DB::raw('(SELECT polzovatel_id, SUM(ochki) as sum_ochki FROM naidi_paru_rezultati GROUP BY polzovatel_id) as memory'), 'polzovateli.id', '=', 'memory.polzovatel_id')
+            ->leftJoin(DB::raw('(SELECT polzovatel_id, SUM(ochki) as sum_ochki FROM zmeyka_rezultati GROUP BY polzovatel_id) as snake'), 'polzovateli.id', '=', 'snake.polzovatel_id')
+            ->orderByDesc('total_points')
+            ->first();
+
+        return $topPlayer ? $topPlayer->avatar : null;
+    }
+
+    private function getTopPlayerScore()
+    {
+        $topPlayer = Polzovateli::select('polzovateli.*')
+            ->selectRaw('COALESCE(sudoku.sum_ochki, 0) + COALESCE(memory.sum_ochki, 0) + COALESCE(snake.sum_ochki, 0) as total_points')
+            ->leftJoin(DB::raw('(SELECT polzovatel_id, SUM(ochki) as sum_ochki FROM sudoku_rezultati GROUP BY polzovatel_id) as sudoku'), 'polzovateli.id', '=', 'sudoku.polzovatel_id')
+            ->leftJoin(DB::raw('(SELECT polzovatel_id, SUM(ochki) as sum_ochki FROM naidi_paru_rezultati GROUP BY polzovatel_id) as memory'), 'polzovateli.id', '=', 'memory.polzovatel_id')
+            ->leftJoin(DB::raw('(SELECT polzovatel_id, SUM(ochki) as sum_ochki FROM zmeyka_rezultati GROUP BY polzovatel_id) as snake'), 'polzovateli.id', '=', 'snake.polzovatel_id')
+            ->orderByDesc('total_points')
+            ->first();
+
+        return $topPlayer ? $topPlayer->total_points : 0;
     }
 }
