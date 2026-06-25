@@ -38,6 +38,18 @@
                         @endif
                     </div>
                 </form>
+                @if(request('game'))
+                    <div class="search-hint">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Рейтинг отсортирован по очкам в игре 
+                        <strong>
+                            @if(request('game') == 'sudoku') 🧩 Судоку
+                            @elseif(request('game') == 'memory') 🃏 Найди пару
+                            @elseif(request('game') == 'snake') 🐍 Змейка
+                            @endif
+                        </strong>
+                    </div>
+                @endif
             </div>
             
             <!-- ========================================== -->
@@ -56,9 +68,24 @@
                                 <th style="width: 70px;">Место</th>
                                 <th>Игрок</th>
                                 <th style="width: 100px;">Всего очков</th>
-                                <th style="width: 90px;">🧩 Судоку</th>
-                                <th style="width: 90px;">🃏 Найди пару</th>
-                                <th style="width: 90px;">🐍 Змейка</th>
+                                <th style="width: 90px;">
+                                    🧩 Судоку
+                                    @if(request('game') == 'sudoku')
+                                        <span style="font-size: 0.7rem; display: block; color: #e2ffedff; font-weight: 400;">⬇ сортировка</span>
+                                    @endif
+                                </th>
+                                <th style="width: 90px;">
+                                    🃏 Найди пару
+                                    @if(request('game') == 'memory')
+                                        <span style="font-size: 0.7rem; display: block; color: #e2ffedff; font-weight: 400;">⬇ сортировка</span>
+                                    @endif
+                                </th>
+                                <th style="width: 90px;">
+                                    🐍 Змейка
+                                    @if(request('game') == 'snake')
+                                        <span style="font-size: 0.7rem; display: block; color: #e2ffedff; font-weight: 400;">⬇ сортировка</span>
+                                    @endif
+                                </th>
                                 <th style="width: 80px;">Игр</th>
                             </tr>
                         </thead>

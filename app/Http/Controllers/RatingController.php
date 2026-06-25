@@ -42,23 +42,26 @@ class RatingController extends Controller
             });
         }
 
-        // Фильтр по игре
+        // Фильтр по игре и сортировка по очкам выбранной игры
         if ($request->filled('game')) {
             switch ($request->game) {
                 case 'sudoku':
-                    $query->having('sudoku_points', '>', 0);
+                    $query->having('sudoku_points', '>', 0)
+                          ->orderByDesc('sudoku_points');
                     break;
                 case 'memory':
-                    $query->having('memory_points', '>', 0);
+                    $query->having('memory_points', '>', 0)
+                          ->orderByDesc('memory_points');
                     break;
                 case 'snake':
-                    $query->having('snake_points', '>', 0);
+                    $query->having('snake_points', '>', 0)
+                          ->orderByDesc('snake_points');
                     break;
             }
+        } else {
+            // Если игра не выбрана — сортировка по общим очкам
+            $query->orderByDesc('total_points');
         }
-
-        // Сортировка ТОЛЬКО по общим очкам (по убыванию)
-        $query->orderByDesc('total_points');
 
         return $query;
     }

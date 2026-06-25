@@ -2038,3 +2038,39 @@ h3 {
     }
 }
 
+/* ============================================
+   КНОПКИ В ПОДДЕРЖКЕ
+============================================ */
+.btn-small {
+    display: inline-block !important;
+    width: auto !important;
+    padding: 6px 16px !important;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    background: #edf2f7;
+    color: #2d3748;
+    margin-top: 8px;
+    white-space: nowrap;
+}
+
+.btn-small:hover {
+    background: #e2e8f0;
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: #2d3748;
+}
+
+.btn-small.btn-primary {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: white;
+}
+
+.btn-small.btn-primary:hover {
+    background: linear-gradient(135deg, #0d7a6f, #2dd66a);
+    color: white;
+}
