@@ -18,7 +18,7 @@
     </div>
     
     <div id="sudoku-grid" class="sudoku-grid">
-        <!-- Генерируется JS -->
+        
     </div>
     
     <div class="sudoku-controls">
